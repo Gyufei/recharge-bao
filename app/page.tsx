@@ -1,12 +1,13 @@
 import { auth } from '@/auth';
-import { SignIn } from '@/lib/components/sign-in';
+import { redirect } from 'next/navigation';
 
 export default async function Home() {
   const session = await auth();
 
   if (!session) {
-    return <SignIn />;
+    redirect('/login');
+    return;
   }
 
-  return <div>Begin</div>;
+  redirect('/recharge');
 }
