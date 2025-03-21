@@ -10,9 +10,11 @@ export interface IRechargeRecord {
   totalMileage: number;
   userId: string;
   chargingStationId: number;
+
+  chargingStation: IChargingStation;
 }
 
-export interface ChargingStation {
+export interface IChargingStation {
   id: number;
   name: string;
 }

@@ -1,21 +1,23 @@
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import { checkAuth } from '../help/check-auth';
 
 export async function GET(request: Request) {
-  const session = await auth();
-  const userId = session?.user?.id;
-
-  console.log('session', session);
-  console.log('userId', userId);
+  const { userId, authErrorResponse } = await checkAuth();
 
   if (!userId) {
-    return Response.json({ error: 'No user id' }, { status: 401 });
+    return authErrorResponse;
   }
 
   const chargingRecords = await prisma.chargingRecord.findMany({
     where: {
       userId: userId,
+    },
+    include: {
+      chargingStation: true,
+    },
+    orderBy: {
+      date: 'desc',
     },
   });
 

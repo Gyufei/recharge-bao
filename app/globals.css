@@ -1,8 +1,36 @@
 @import 'tailwindcss';
 @plugin "daisyui" {
   themes: autumn --default, dracula --prefersdark;
-};
+}
+
+:root {
+  scrollbar-color: unset !important;
+}
 
 body {
   font-family: var(--font-lato), Arial, Helvetica, sans-serif;
+}
+
+
+@layer utilities {
+  .no-scroll-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .trans-scroll-bar::-webkit-scrollbar {
+    background-color: rgba(255, 255, 255, 0.1);
+    width: 10px;
+    border-radius: 10px;
+  }
+
+  .trans-scroll-bar::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+
+  .trans-scroll-bar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    /* opacity: 0.2; */
+    border-radius: 10px;
+  }
 }
