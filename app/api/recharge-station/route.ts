@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { checkAuth } from '../help/check-auth';
 
-export async function GET(request: Request) {
+export async function GET() {
   const { userId, authErrorResponse } = await checkAuth();
 
   if (!userId) {
