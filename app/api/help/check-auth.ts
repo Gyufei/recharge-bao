@@ -6,6 +6,13 @@ export async function checkAuth() {
 
   return {
     userId,
-    authErrorResponse: Response.json({ error: 'No user id' }, { status: 401 }),
+    authErrorResponse: Response.json(
+      {
+        success: false,
+        message: 'No user id',
+        data: null,
+      },
+      { status: 401 }
+    ),
   };
 }

@@ -10,6 +10,7 @@ import { RangeCharging } from './range-charging';
 import { SocCharging } from './soc-charging';
 import { ChargingStationPic } from './charging-station-pic';
 import { IRechargeRecord } from '@/lib/types/data-model';
+import { AddRechargeModal } from '../add-recharge-modal';
 
 function getPrice(chargingCost: number, chargingKWh: number) {
   const price = divide(String(chargingCost), String(chargingKWh));
@@ -23,7 +24,7 @@ export default function RechargeTable() {
     getTheme(),
     {
       Table: `
-        --data-table-library_grid-template-columns:  120px 1fr 70px 140px 140px 80px 100px;
+        --data-table-library_grid-template-columns: 120px 1fr 70px 140px 140px 80px 90px;
       `,
       HeaderRow: `
         color: var(--color-accent-content)
@@ -66,12 +67,10 @@ export default function RechargeTable() {
     },
     {
       label: '价格',
-      renderCell: (item: IRechargeRecord) =>
-        isLoading ? (
-          <div className="skeleton h-4 my-3"></div>
-        ) : (
-          <span className="text-info">{getPrice(item.chargingCost, item.chargingKWh)}</span>
-        ),
+      renderCell: (item: IRechargeRecord) => {
+        const price = getPrice(item.chargingCost, item.chargingKWh);
+        return <>{isLoading ? <div className="skeleton h-4 my-3"></div> : <span className="text-info">{price}</span>}</>;
+      },
     },
     {
       label: '续航',
@@ -106,5 +105,12 @@ export default function RechargeTable() {
     },
   ];
 
-  return <CompactTable columns={COLUMNS} data={tableData} theme={theme} layout={{ custom: true }} />;
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <AddRechargeModal />
+      </div>
+      <CompactTable columns={COLUMNS} data={tableData} theme={theme} layout={{ custom: true }} />
+    </div>
+  );
 }
