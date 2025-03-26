@@ -12,7 +12,7 @@ export default async function Login() {
   return (
     <main className="w-full h-screen flex flex-col items-center justify-center px-4">
       <div className="max-w-sm flex items-center flex-col justify-center w-full text-gray-600 space-y-5">
-        <Image src="/icons/logo.png" height={150} width={150} alt="logo" className="mx-auto rounded-full" />
+        <Image src="/icons/logo.svg" height={150} width={150} alt="logo" className="mx-auto rounded-full" />
         <form
           action={async () => {
             'use server';

@@ -1,6 +1,6 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { showGlobalToast } from '@/lib/components/toast-provider';
+import { showGlobalToast } from '@/components/toast/toast-provider';
 
 const queryClient = new QueryClient({
   defaultOptions: {

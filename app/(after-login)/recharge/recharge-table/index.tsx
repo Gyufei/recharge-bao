@@ -1,9 +1,11 @@
 'use client';
 import dayjs from 'dayjs';
 import { CompactTable } from '@table-library/react-table-library/compact';
+import { usePagination } from '@table-library/react-table-library/pagination';
 import { useTheme } from '@table-library/react-table-library/theme';
 import { getTheme } from '@table-library/react-table-library/baseline';
 
+import { Pagination } from '@/components/pagination/pagination';
 import { useRechargeRecords } from '@/lib/hooks/api/use-recharge-records';
 import { RangeCharging } from './range-charging';
 import { SocCharging } from './soc-charging';
@@ -35,6 +37,9 @@ export function RechargeTable() {
       Row: `
         font-size: 16px;
       `,
+      Cell: `
+        padding: 8px;
+      `,
     },
   ]);
 
@@ -47,6 +52,18 @@ export function RechargeTable() {
     : {
         nodes: data || [],
       };
+
+  const pagination = usePagination(tableData, {
+    state: {
+      page: 0,
+      size: 10,
+    },
+    onChange: () => {},
+  });
+
+  const handlePageChange = (page: number) => {
+    pagination.fns.onSetPage(page);
+  };
 
   const COLUMNS = [
     {
@@ -104,11 +121,28 @@ export function RechargeTable() {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <AddRechargeModal />
-      </div>
-      <CompactTable columns={COLUMNS} data={tableData} theme={theme} layout={{ custom: true }} />
+    <div className="flex flex-col gap-y-3">
+      <AddRechargeModal />
+      <CompactTable columns={COLUMNS} data={tableData} theme={theme} layout={{ custom: true }} pagination={pagination} />
+      {pagination.state.getTotalPages(tableData.nodes) > 1 && (
+        <Pagination
+          totalPages={pagination.state.getTotalPages(tableData.nodes)}
+          edgePageCount={3}
+          middlePagesSiblingCount={1}
+          currentPage={pagination.state.page}
+          setCurrentPage={handlePageChange}
+        >
+          <Pagination.PrevButton />
+
+          <nav className="mx-2 flex items-center justify-center">
+            <ul className="flex items-center gap-2">
+              <Pagination.PageButton activeClassName="" inactiveClassName="" className="" />
+            </ul>
+          </nav>
+
+          <Pagination.NextButton />
+        </Pagination>
+      )}
     </div>
   );
 }
