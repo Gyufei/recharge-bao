@@ -11,7 +11,7 @@ import { divide, utils } from 'safebase';
 
 dayjs.extend(minMax);
 
-export default function StatisticsCard({ className }: { className?: string }) {
+export function StatisticsCard({ className }: { className?: string }) {
   const { data, isLoading } = useRechargeRecords();
 
   const chargeTimes = useMemo(() => {

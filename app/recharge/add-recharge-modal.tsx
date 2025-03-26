@@ -57,8 +57,8 @@ export function AddRechargeModal() {
 
   return (
     <>
-      <button className="btn btn-outline btn-info" onClick={() => setIsOpen(true)}>
-        <MdOutlineAdd className='text-2xl' />
+      <button className="btn btn-outline btn-info btn-sm" onClick={() => setIsOpen(true)}>
+        <MdOutlineAdd className='text-xl' />
       </button>
 
       <dialog className={`modal ${isOpen ? 'modal-open' : ''}`}>

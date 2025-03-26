@@ -1,6 +1,5 @@
 'use client';
 import dayjs from 'dayjs';
-import { divide, utils } from 'safebase';
 import { CompactTable } from '@table-library/react-table-library/compact';
 import { useTheme } from '@table-library/react-table-library/theme';
 import { getTheme } from '@table-library/react-table-library/baseline';
@@ -12,12 +11,7 @@ import { ChargingStationPic } from './charging-station-pic';
 import { IRechargeRecord } from '@/lib/types/data-model';
 import { AddRechargeModal } from '../add-recharge-modal';
 
-function getPrice(chargingCost: number, chargingKWh: number) {
-  const price = divide(String(chargingCost), String(chargingKWh));
-  return utils.roundResult(price, 2);
-}
-
-export default function RechargeTable() {
+export function RechargeTable() {
   const { data, isLoading } = useRechargeRecords();
 
   const theme = useTheme([
@@ -44,9 +38,15 @@ export default function RechargeTable() {
     },
   ]);
 
-  const tableData = {
-    nodes: data || [],
-  };
+  const tableData = isLoading
+    ? {
+        nodes: Array.from({ length: 10 }, (_, index) => ({
+          id: index,
+        })),
+      }
+    : {
+        nodes: data || [],
+      };
 
   const COLUMNS = [
     {
@@ -67,10 +67,8 @@ export default function RechargeTable() {
     },
     {
       label: '价格',
-      renderCell: (item: IRechargeRecord) => {
-        const price = getPrice(item.chargingCost, item.chargingKWh);
-        return <>{isLoading ? <div className="skeleton h-4 my-3"></div> : <span className="text-info">{price}</span>}</>;
-      },
+      renderCell: (item: IRechargeRecord) =>
+        isLoading ? <div className="skeleton h-4 my-3"></div> : <span className="text-info">{item.price}</span>,
     },
     {
       label: '续航',

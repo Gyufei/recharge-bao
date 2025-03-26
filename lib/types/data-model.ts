@@ -12,6 +12,7 @@ export interface IRechargeRecord {
   totalMileage: number;
   userId: string;
   chargingStationId: number;
+  price: number;
 
   chargingStation: IChargingStation;
 }
