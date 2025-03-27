@@ -9,5 +9,5 @@ export default async function Home() {
     return;
   }
 
-  redirect('/recharge');
+  redirect('/charge');
 }

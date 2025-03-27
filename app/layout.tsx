@@ -11,7 +11,7 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: 'RechargeBao',
+  title: 'ChargeBao',
   description: 'Car charging record',
 };
 

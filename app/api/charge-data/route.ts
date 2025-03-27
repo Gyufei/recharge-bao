@@ -1,16 +1,19 @@
-import { prisma } from '@/lib/prisma';
-import { checkAuth } from '../help/check-auth';
-import { rechargeSchema } from '@/lib/types/data-model';
 import { z } from 'zod';
-import { NextRequest } from 'next/server';
+import { auth } from '@/auth';
 
-export async function GET(request: NextRequest) {
+import { prisma } from '@/lib/prisma';
+import { IApiResponse, IChargeRecord, IPaginationInfo } from '@/lib/types/common';
+import { chargeSchema } from '@/lib/types/schema';
+import { authErrorResponse, NextAuthRequest } from '../help/helper';
+
+export const GET = auth(async function GET(request: NextAuthRequest) {
   try {
-    const { userId, authErrorResponse } = await checkAuth();
-
-    if (!userId) {
-      return authErrorResponse;
+    if (!request.auth) {
+      return authErrorResponse();
     }
+
+    const session = await auth();
+    const userId = session?.user?.id;
 
     // 从 URL 参数中获取分页信息
     const searchParams = request.nextUrl.searchParams;
@@ -39,7 +42,7 @@ export async function GET(request: NextRequest) {
       },
       skip,
       take: pageSize,
-    });
+    }) as IChargeRecord[];
 
     return Response.json({
       data: chargingRecords,
@@ -48,38 +51,40 @@ export async function GET(request: NextRequest) {
         page,
         pageSize,
         totalPages: Math.ceil(total / pageSize),
-      },
+      } as IPaginationInfo,
       success: true,
-    });
+    } as IApiResponse<IChargeRecord[]>);
   } catch (error) {
     console.error('获取充电记录失败:', error);
 
     return Response.json(
       {
+        data: null,
         message: '获取充电记录失败',
         success: false,
       },
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(request: Request) {
-  const { userId, authErrorResponse } = await checkAuth();
-
-  if (!userId) {
-    return authErrorResponse;
+export const POST = auth(async function POST(request: NextAuthRequest) {
+  if (!request.auth) {
+    return authErrorResponse();
   }
+
+  const session = await auth();
+  const userId = session?.user?.id;
 
   try {
     const body = await request.json();
-    const validatedData = rechargeSchema.parse(body);
+    const validatedData = chargeSchema.parse(body);
 
     await prisma.chargingRecord.create({
       data: {
         ...validatedData,
         date: new Date(validatedData.date),
-        userId,
+        userId: userId!,
       },
     });
 
@@ -108,4 +113,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+});

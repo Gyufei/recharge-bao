@@ -5,23 +5,23 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRechargeStations } from '@/lib/hooks/api/use-recharge-stations';
-import { rechargeSchema } from '@/lib/types/data-model';
+import { useChargeStations } from '@/lib/hooks/api/use-charge-stations';
+import { chargeSchema } from '@/lib/types/schema';
 import { MdOutlineAdd } from "react-icons/md";
 
-type RechargeFormData = z.infer<typeof rechargeSchema>;
+type ChargeFormData = z.infer<typeof chargeSchema>;
 
-export function AddRechargeModal() {
+export function AddChargeModal() {
   const [isOpen, setIsOpen] = useState(false);
-  const { data: stations } = useRechargeStations();
+  const { data: stations } = useChargeStations();
   const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<RechargeFormData>({
-    resolver: zodResolver(rechargeSchema),
+  } = useForm<ChargeFormData>({
+    resolver: zodResolver(chargeSchema),
     defaultValues: {
       date: dayjs().format('YYYY-MM-DD'),
       chargingCost: 0,
@@ -35,9 +35,9 @@ export function AddRechargeModal() {
     },
   });
 
-  const onSubmit = async (data: RechargeFormData) => {
+  const onSubmit = async (data: ChargeFormData) => {
     try {
-      await fetch('/api/recharge-data', {
+      await fetch('/api/charge-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { DomainHost } from '@/lib/const';
-import { IChargingStation } from '@/lib/types/data-model';
+import { DOMAIN_HOST } from '@/lib/const';
+import { IApiResponse, IChargingStation } from '@/lib/types/common';
+import { IChargingStationVO } from '@/lib/types/vo';
 
 const StationPicMap = {
   '1': {
@@ -21,12 +22,23 @@ const StationPicMap = {
   },
 };
 
-export function useRechargeStations() {
+export function useChargeStations() {
   async function getChargeStations() {
-    const chargingStationsData = await fetch(DomainHost + '/api/recharge-station');
-    const chargingStations: IChargingStation[] = await chargingStationsData.json();
+    const chargingStationsData = await fetch(DOMAIN_HOST + '/api/charge-station');
+    const { data, success } = (await chargingStationsData.json()) as IApiResponse<IChargingStation[]>;
 
-    return chargingStations;
+    if (!success) {
+      throw new Error('获取充电站失败');
+    }
+
+    const voData = data.map((station: IChargingStation): IChargingStationVO => {
+      return {
+        ...station,
+        imgs: getStationPic(station.id),
+      };
+    });
+
+    return voData;
   }
 
   const query = useQuery({ queryKey: ['chargeStations'], queryFn: getChargeStations });

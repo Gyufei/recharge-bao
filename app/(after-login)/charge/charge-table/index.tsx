@@ -6,21 +6,35 @@ import { useTheme } from '@table-library/react-table-library/theme';
 import { getTheme } from '@table-library/react-table-library/baseline';
 
 import { Pagination } from '@/components/pagination/pagination';
-import { useRechargeRecords } from '@/lib/hooks/api/use-recharge-records';
+import { useChargeRecords } from '@/lib/hooks/api/use-charge-records';
 import { RangeCharging } from './range-charging';
-import { SocCharging } from './soc-charging';
-import { ChargingStationPic } from './charging-station-pic';
-import { IRechargeRecord } from '@/lib/types/data-model';
-import { AddRechargeModal } from '../add-recharge-modal';
+import { ChargeStationPic } from './charge-station-pic';
+import { IChargeRecordVO } from '@/lib/types/vo';
+import { AddChargeModal } from '../add-charge-modal';
+import { useState } from 'react';
 
-export function RechargeTable() {
-  const { data, isLoading } = useRechargeRecords();
+export function ChargeTable() {
+  const INIT_PAGINATION = {
+    total: 0,
+    page: 0,
+    pageSize: 10,
+    totalPages: 0,
+  };
+
+  const [currentPage, setCurrentPage] = useState(INIT_PAGINATION.page);
+
+  const { data, isLoading } = useChargeRecords(currentPage + 1, INIT_PAGINATION.pageSize);
+
+  const { data: chargeRecords, pagination: paginationData } = data || {
+    data: [],
+    pagination: INIT_PAGINATION,
+  };
 
   const theme = useTheme([
     getTheme(),
     {
       Table: `
-        --data-table-library_grid-template-columns: 120px 1fr 70px 140px 140px 80px 90px;
+        --data-table-library_grid-template-columns: 120px 1fr 70px 1fr 80px 90px;
       `,
       HeaderRow: `
         color: var(--color-accent-content)
@@ -47,33 +61,41 @@ export function RechargeTable() {
     ? {
         nodes: Array.from({ length: 10 }, (_, index) => ({
           id: index,
-        })),
+        })) as IChargeRecordVO[],
       }
     : {
-        nodes: data || [],
+        nodes: chargeRecords,
       };
 
-  const pagination = usePagination(tableData, {
-    state: {
-      page: 0,
-      size: 10,
+  const paginationInst = usePagination(
+    tableData,
+    {
+      state: {
+        page: INIT_PAGINATION.page,
+        size: INIT_PAGINATION.pageSize,
+      },
+      onChange: (_action, state) => {
+        setCurrentPage(state.page);
+      },
     },
-    onChange: () => {},
-  });
+    {
+      isServer: true,
+    }
+  );
 
   const handlePageChange = (page: number) => {
-    pagination.fns.onSetPage(page);
+    paginationInst.fns.onSetPage(page);
   };
 
   const COLUMNS = [
     {
       label: '日期',
-      renderCell: (item: IRechargeRecord) =>
+      renderCell: (item: IChargeRecordVO) =>
         isLoading ? <div className="skeleton w-24 h-4 my-3"></div> : dayjs(item.date).format('YYYY/MM/DD'),
     },
     {
       label: '费用/度数',
-      renderCell: (item: IRechargeRecord) =>
+      renderCell: (item: IChargeRecordVO) =>
         isLoading ? (
           <div className="skeleton h-4 my-3"></div>
         ) : (
@@ -84,62 +106,52 @@ export function RechargeTable() {
     },
     {
       label: '价格',
-      renderCell: (item: IRechargeRecord) =>
+      renderCell: (item: IChargeRecordVO) =>
         isLoading ? <div className="skeleton h-4 my-3"></div> : <span className="text-info">{item.price}</span>,
     },
     {
       label: '续航',
-      renderCell: (item: IRechargeRecord) =>
+      renderCell: (item: IChargeRecordVO) =>
         isLoading ? (
           <div className="skeleton h-4 my-3"></div>
         ) : (
-          <RangeCharging before={item.rangeBeforeCharging ?? 0} after={item.rangeAfterCharging ?? 0} />
-        ),
-    },
-    {
-      label: 'Soc',
-      renderCell: (item: IRechargeRecord) =>
-        isLoading ? (
-          <div className="skeleton h-4 my-3"></div>
-        ) : (
-          <SocCharging before={item.socBeforeCharging} after={item.socAfterCharging} />
+          <RangeCharging
+            beforeRange={item.rangeBeforeCharging ?? 0}
+            afterRange={item.rangeAfterCharging ?? 0}
+            beforeSoc={item.socBeforeCharging ?? 0}
+            afterSoc={item.socAfterCharging ?? 0}
+          />
         ),
     },
     {
       label: '总里程',
-      renderCell: (item: IRechargeRecord) => (isLoading ? <div className="skeleton h-4 my-3"></div> : item.totalMileage ?? '-'),
+      renderCell: (item: IChargeRecordVO) => (isLoading ? <div className="skeleton h-4 my-3"></div> : item.totalMileage ?? '-'),
     },
     {
       label: '充电站',
-      renderCell: (item: IRechargeRecord) =>
+      renderCell: (item: IChargeRecordVO) =>
         isLoading ? (
           <div className="skeleton h-4 my-3"></div>
         ) : (
-          <ChargingStationPic id={item.chargingStationId} name={item.chargingStation.name} />
+          <ChargeStationPic id={item.chargingStationId} name={item.chargingStation.name} />
         ),
     },
   ];
 
   return (
     <div className="flex flex-col gap-y-3">
-      <AddRechargeModal />
-      <CompactTable columns={COLUMNS} data={tableData} theme={theme} layout={{ custom: true }} pagination={pagination} />
-      {pagination.state.getTotalPages(tableData.nodes) > 1 && (
+      <AddChargeModal />
+      <CompactTable columns={COLUMNS} data={tableData} theme={theme} layout={{ custom: true }} pagination={paginationInst} />
+      {paginationData.totalPages > 1 && (
         <Pagination
-          totalPages={pagination.state.getTotalPages(tableData.nodes)}
+          totalPages={paginationData.totalPages}
           edgePageCount={3}
           middlePagesSiblingCount={1}
-          currentPage={pagination.state.page}
+          currentPage={currentPage}
           setCurrentPage={handlePageChange}
         >
           <Pagination.PrevButton />
-
-          <nav className="mx-2 flex items-center justify-center">
-            <ul className="flex items-center gap-2">
-              <Pagination.PageButton activeClassName="" inactiveClassName="" className="" />
-            </ul>
-          </nav>
-
+          <Pagination.PageButton activeClassName="" inactiveClassName="" className="" />
           <Pagination.NextButton />
         </Pagination>
       )}
